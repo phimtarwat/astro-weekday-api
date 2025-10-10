@@ -6,7 +6,7 @@ info:
     API สำหรับตรวจสอบวันจริงจากวันที่ และคำนวณตำแหน่งดวงดาวเบื้องต้น
     ใช้ flatlib-lite (รองรับ Vercel Python 3.12)
 servers:
-  - url: https://YOUR-PROJECT.vercel.app
+  - url: https://astro-weekday-api.vercel.app
 
 paths:
   /:
