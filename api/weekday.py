@@ -1,8 +1,9 @@
 from datetime import datetime, date
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 import zoneinfo
 from typing import Optional
+import os
 
 # ✅ ใช้ flatlib-lite (ไม่ต้องใช้ swisseph)
 from flatlib import chart, const, geo, datetime as flatdatetime
@@ -13,7 +14,7 @@ DAYS_TH = ["จันทร์", "อังคาร", "พุธ", "พฤห�
 
 
 # ------------------------------
-# ฟังก์ชัน: แปลงวันที่ พ.ศ./ค.ศ.
+# แปลงวันที่ พ.ศ./ค.ศ.
 # ------------------------------
 def parse_ddmmyyyy_th(s: str) -> tuple[date, str]:
     s = s.strip()
@@ -32,7 +33,7 @@ def parse_ddmmyyyy_th(s: str) -> tuple[date, str]:
 
 
 # ------------------------------
-# Root endpoint สำหรับตรวจสอบระบบ
+# Root Endpoint
 # ------------------------------
 @app.get("/")
 def root():
@@ -40,7 +41,7 @@ def root():
 
 
 # ------------------------------
-# Endpoint: ตรวจสอบวัน
+# Endpoint: ตรวจสอบวันจากวันที่
 # ------------------------------
 @app.get("/api/weekday")
 def get_weekday(date: str):
@@ -56,7 +57,7 @@ def get_weekday(date: str):
 
 
 # ------------------------------
-# Endpoint: ตรวจสอบวัน + เวลา + timezone
+# Endpoint: ตรวจสอบวัน + เวลา + timezone + สถานที่
 # ------------------------------
 @app.get("/api/astro-weekday")
 def get_astro_weekday(
@@ -100,7 +101,7 @@ def get_astro_weekday(
 
 
 # ------------------------------
-# Endpoint: คำนวณดวงดาวแบบ simplified (flatlib-lite)
+# Endpoint: คำนวณตำแหน่งดวงดาว (flatlib-lite)
 # ------------------------------
 @app.get("/api/astro-chart")
 def get_astro_chart(
@@ -112,7 +113,6 @@ def get_astro_chart(
 ):
     """คำนวณตำแหน่งดวงดาว (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Ascendant)"""
     d, cal = parse_ddmmyyyy_th(date)
-
     tz = zoneinfo.ZoneInfo(timezone)
     dt_local = datetime.combine(d, datetime.strptime(time, "%H:%M").time()).replace(tzinfo=tz)
     offset_hours = dt_local.utcoffset().total_seconds() / 3600.0
@@ -139,7 +139,20 @@ def get_astro_chart(
 
 
 # ------------------------------
-# ทดสอบในเครื่อง
+# ✅ Endpoint: ให้ดาวน์โหลด openapi.yaml ได้โดยตรง
+# ------------------------------
+@app.get("/openapi.yaml")
+def get_openapi_yaml():
+    """เสิร์ฟไฟล์ schema ให้ Custom GPT โหลด"""
+    file_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="text/yaml")
+    else:
+        raise HTTPException(status_code=404, detail="openapi.yaml not found")
+
+
+# ------------------------------
+# Run ในเครื่อง (dev mode)
 # ------------------------------
 if __name__ == "__main__":
     import uvicorn
