@@ -5,10 +5,7 @@ import zoneinfo
 from typing import Optional
 
 # เพิ่ม import สำหรับโหราศาสตร์
-from flatlib.chart import Chart
-from flatlib.datetime import Datetime
-from flatlib.geopos import GeoPos
-
+from flatlib import chart, const, geo, datetime as flatdatetime
 
 app = FastAPI()
 
