@@ -3,207 +3,54 @@ info:
   title: Astro Weekday API (Lite)
   version: "1.0.0"
   description: >
-    API สำหรับตรวจสอบวันจริงจากวันที่ และคำนวณตำแหน่งดวงดาวเบื้องต้น  
-    **รองรับ พ.ศ./ค.ศ.** และสามารถใช้ timezone ต่างประเทศได้  
-    (โค้ดใช้ flatlib-lite จึง deploy ได้บน Vercel Runtime Python 3.12)
-
+    API สำหรับตรวจสอบวันจริงจากวันที่ และคำนวณตำแหน่งดวงดาวเบื้องต้น
+    ใช้ flatlib-lite (รองรับ Vercel Python 3.12)
 servers:
-  - url: https://astro-weekday-api.vercel.app    # ← ใส่ URL จริงของคุณ
+  - url: https://YOUR-PROJECT.vercel.app
 
 paths:
   /:
     get:
-      summary: ตรวจสอบว่า API ทำงานอยู่หรือไม่
+      summary: Health check
       operationId: getRoot
       responses:
         "200":
-          description: API is running
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Astro Weekday API (lite) is running 🚀"
+          description: OK
 
   /api/weekday:
     get:
-      summary: ตรวจสอบวันจริงจากวันที่
       operationId: getWeekday
+      summary: ตรวจสอบวันจริงจากวันที่ (ไทย/สากล)
       parameters:
         - name: date
           in: query
           required: true
-          schema:
-            type: string
-            example: "10/10/2568"
-          description: วันที่รูปแบบ DD/MM/YYYY (พ.ศ. หรือ ค.ศ.)
+          schema: { type: string, example: "10/10/2568" }
       responses:
         "200":
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  date:
-                    type: string
-                    example: "10/10/2568"
-                  weekday:
-                    type: string
-                    example: "ศุกร์"
-                  resolved_gregorian:
-                    type: string
-                    example: "2025-10-10"
-                  calendar:
-                    type: string
-                    example: "BE"
+          description: OK
 
   /api/astro-weekday:
     get:
-      summary: ตรวจสอบวันจริง + เวลา + timezone + สถานที่เกิด
       operationId: getAstroWeekday
+      summary: ตรวจสอบวันจริง + เวลา + timezone + สถานที่
       parameters:
-        - name: date
-          in: query
-          required: true
-          schema:
-            type: string
-            example: "24/11/2514"
-        - name: time
-          in: query
-          required: false
-          schema:
-            type: string
-            example: "11:00"
-        - name: timezone
-          in: query
-          required: false
-          schema:
-            type: string
-            example: "Asia/Bangkok"
-        - name: place
-          in: query
-          required: false
-          schema:
-            type: string
-            example: "Bangkok"
+        - { name: date, in: query, required: true, schema: { type: string, example: "24/11/2514" } }
+        - { name: time, in: query, required: false, schema: { type: string, example: "11:00" } }
+        - { name: timezone, in: query, required: false, schema: { type: string, example: "Asia/Bangkok" } }
+        - { name: place, in: query, required: false, schema: { type: string, example: "Bangkok" } }
       responses:
-        "200":
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  date:
-                    type: string
-                  time:
-                    type: string
-                  timezone:
-                    type: string
-                  weekday:
-                    type: string
-                  resolved_gregorian:
-                    type: string
-                  calendar:
-                    type: string
-                  local_datetime:
-                    type: string
-                  utc_datetime:
-                    type: string
-                  place:
-                    type: string
+        "200": { description: OK }
 
   /api/astro-chart:
     get:
-      summary: คำนวณตำแหน่งดวงดาว (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Ascendant)
       operationId: getAstroChart
+      summary: คำนวณตำแหน่งดวงดาว (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Ascendant)
       parameters:
-        - name: date
-          in: query
-          required: true
-          schema:
-            type: string
-            example: "24/11/2514"
-        - name: time
-          in: query
-          required: true
-          schema:
-            type: string
-            example: "11:00"
-        - name: timezone
-          in: query
-          required: false
-          schema:
-            type: string
-            example: "Asia/Bangkok"
-        - name: lat
-          in: query
-          required: false
-          schema:
-            type: number
-            example: 13.75
-        - name: lon
-          in: query
-          required: false
-          schema:
-            type: number
-            example: 100.5
+        - { name: date, in: query, required: true, schema: { type: string, example: "24/11/2514" } }
+        - { name: time, in: query, required: true, schema: { type: string, example: "11:00" } }
+        - { name: timezone, in: query, required: false, schema: { type: string, example: "Asia/Bangkok" } }
+        - { name: lat, in: query, required: false, schema: { type: number, example: 13.75 } }
+        - { name: lon, in: query, required: false, schema: { type: number, example: 100.5 } }
       responses:
-        "200":
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  input:
-                    type: object
-                    properties:
-                      date:
-                        type: string
-                        example: "24/11/2514"
-                      time:
-                        type: string
-                        example: "11:00"
-                      timezone:
-                        type: string
-                        example: "Asia/Bangkok"
-                      lat:
-                        type: number
-                        example: 13.75
-                      lon:
-                        type: number
-                        example: 100.5
-                  planets:
-                    type: object
-                    properties:
-                      Sun:
-                        type: object
-                        properties:
-                          sign:
-                            type: string
-                            example: "Sagittarius"
-                          lon:
-                            type: number
-                            example: 242.38
-                      Moon:
-                        type: object
-                        properties:
-                          sign:
-                            type: string
-                            example: "Aquarius"
-                          lon:
-                            type: number
-                            example: 308.12
-                      Ascendant:
-                        type: object
-                        properties:
-                          sign:
-                            type: string
-                            example: "Pisces"
-                          lon:
-                            type: number
-                            example: 334.22
+        "200": { description: OK }
