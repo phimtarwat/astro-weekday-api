@@ -1,20 +1,36 @@
 openapi: 3.1.0
 info:
-  title: Astro Weekday API
+  title: Astro Weekday API (Lite)
   version: "1.0.0"
-  description: |
-    🔮 API สำหรับตรวจสอบวันจริง และคำนวณข้อมูลโหราศาสตร์เบื้องต้น  
-    รองรับทั้งวันที่รูปแบบไทย (พ.ศ.) และสากล (ค.ศ.)  
-    สร้างด้วย FastAPI + Flatlib
+  description: >
+    API สำหรับตรวจสอบวันจริงจากวันที่ และคำนวณตำแหน่งดวงดาวเบื้องต้น  
+    **รองรับ พ.ศ./ค.ศ.** และสามารถใช้ timezone ต่างประเทศได้  
+    (โค้ดใช้ flatlib-lite จึง deploy ได้บน Vercel Runtime Python 3.12)
 
 servers:
-  - url: https://astro-weekday-api.vercel.app   # ⚠️ เปลี่ยนชื่อโดเมนให้ตรงกับของคุณ
+  - url: https://astro-weekday-api.vercel.app    # ← ใส่ URL จริงของคุณ
 
 paths:
+  /:
+    get:
+      summary: ตรวจสอบว่า API ทำงานอยู่หรือไม่
+      operationId: getRoot
+      responses:
+        "200":
+          description: API is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Astro Weekday API (lite) is running 🚀"
+
   /api/weekday:
     get:
+      summary: ตรวจสอบวันจริงจากวันที่
       operationId: getWeekday
-      summary: ตรวจสอบวันจริงจากวันที่ (ไทย/สากล)
       parameters:
         - name: date
           in: query
@@ -46,8 +62,8 @@ paths:
 
   /api/astro-weekday:
     get:
+      summary: ตรวจสอบวันจริง + เวลา + timezone + สถานที่เกิด
       operationId: getAstroWeekday
-      summary: ตรวจสอบวันจริง + เวลา + timezone + สถานที่เกิด (เพื่อใช้ในโหราศาสตร์)
       parameters:
         - name: date
           in: query
@@ -55,28 +71,24 @@ paths:
           schema:
             type: string
             example: "24/11/2514"
-          description: วันที่รูปแบบ DD/MM/YYYY
         - name: time
           in: query
           required: false
           schema:
             type: string
             example: "11:00"
-          description: เวลา (HH:MM)
         - name: timezone
           in: query
           required: false
           schema:
             type: string
             example: "Asia/Bangkok"
-          description: โซนเวลา (IANA timezone เช่น Asia/Bangkok, Europe/London)
         - name: place
           in: query
           required: false
           schema:
             type: string
             example: "Bangkok"
-          description: สถานที่เกิด (optional)
       responses:
         "200":
           description: Successful Response
@@ -85,23 +97,29 @@ paths:
               schema:
                 type: object
                 properties:
-                  date: { type: string, example: "24/11/2514" }
-                  time: { type: string, example: "11:00" }
-                  timezone: { type: string, example: "Asia/Bangkok" }
-                  weekday: { type: string, example: "พุธ" }
-                  resolved_gregorian: { type: string, example: "1971-11-24" }
-                  calendar: { type: string, example: "BE" }
-                  local_datetime: { type: string, example: "1971-11-24T11:00:00+07:00" }
-                  utc_datetime: { type: string, example: "1971-11-24T04:00:00+00:00" }
-                  place: { type: string, example: "Bangkok" }
+                  date:
+                    type: string
+                  time:
+                    type: string
+                  timezone:
+                    type: string
+                  weekday:
+                    type: string
+                  resolved_gregorian:
+                    type: string
+                  calendar:
+                    type: string
+                  local_datetime:
+                    type: string
+                  utc_datetime:
+                    type: string
+                  place:
+                    type: string
 
   /api/astro-chart:
     get:
+      summary: คำนวณตำแหน่งดวงดาว (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Ascendant)
       operationId: getAstroChart
-      summary: คำนวณตำแหน่งดวงดาวจริง (Flatlib)
-      description: |
-        คำนวณตำแหน่งดาวเคราะห์หลัก (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Ascendant)
-        จากวันเวลาและสถานที่เกิด
       parameters:
         - name: date
           in: query
@@ -144,19 +162,48 @@ paths:
                   input:
                     type: object
                     properties:
-                      date: { type: string, example: "24/11/2514" }
-                      time: { type: string, example: "11:00" }
-                      timezone: { type: string, example: "Asia/Bangkok" }
-                      lat: { type: number, example: 13.75 }
-                      lon: { type: number, example: 100.5 }
+                      date:
+                        type: string
+                        example: "24/11/2514"
+                      time:
+                        type: string
+                        example: "11:00"
+                      timezone:
+                        type: string
+                        example: "Asia/Bangkok"
+                      lat:
+                        type: number
+                        example: 13.75
+                      lon:
+                        type: number
+                        example: 100.5
                   planets:
                     type: object
-                    example:
-                      Sun: { sign: "Scorpio", lon: 240.55 }
-                      Moon: { sign: "Gemini", lon: 73.12 }
-                      Mercury: { sign: "Sagittarius", lon: 252.44 }
-                      Venus: { sign: "Libra", lon: 203.25 }
-                      Mars: { sign: "Cancer", lon: 101.88 }
-                      Jupiter: { sign: "Scorpio", lon: 231.55 }
-                      Saturn: { sign: "Gemini", lon: 85.33 }
-                      Ascendant: { sign: "Capricorn", lon: 293.15 }
+                    properties:
+                      Sun:
+                        type: object
+                        properties:
+                          sign:
+                            type: string
+                            example: "Sagittarius"
+                          lon:
+                            type: number
+                            example: 242.38
+                      Moon:
+                        type: object
+                        properties:
+                          sign:
+                            type: string
+                            example: "Aquarius"
+                          lon:
+                            type: number
+                            example: 308.12
+                      Ascendant:
+                        type: object
+                        properties:
+                          sign:
+                            type: string
+                            example: "Pisces"
+                          lon:
+                            type: number
+                            example: 334.22
