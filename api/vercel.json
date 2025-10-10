@@ -1,10 +1,6 @@
 {
   "builds": [
-    {
-      "src": "api/weekday.py",
-      "use": "@vercel/python",
-      "config": { "runtime": "python3.9" }
-    }
+    { "src": "api/weekday.py", "use": "@vercel/python" }
   ],
   "routes": [
     { "src": "/(.*)", "dest": "api/weekday.py" }
