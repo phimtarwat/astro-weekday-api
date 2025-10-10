@@ -4,6 +4,12 @@ from fastapi.responses import JSONResponse
 import zoneinfo
 from typing import Optional
 
+# เพิ่ม import สำหรับโหราศาสตร์
+from flatlib.chart import Chart
+from flatlib.datetime import Datetime
+from flatlib.geopos import GeoPos
+
+
 app = FastAPI()
 
 DAYS_TH = ["จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์","อาทิตย์"]
@@ -27,8 +33,9 @@ def parse_ddmmyyyy_th(s: str) -> tuple[date, str]:
             d = d.replace(year=y, day=28)
     return d, calendar
 
+
 # ------------------------------
-# Endpoint เดิม (ยังใช้ได้เหมือนเดิม)
+# Endpoint เดิม (ดูวันจากวันที่)
 # ------------------------------
 @app.get("/api/weekday")
 def get_weekday(date: str):
@@ -46,7 +53,7 @@ def get_weekday(date: str):
 
 
 # ------------------------------
-# 🪐 Endpoint ใหม่: สำหรับโหราศาสตร์
+# 🪐 Endpoint สำหรับโหราศาสตร์เบื้องต้น
 # ------------------------------
 @app.get("/api/astro-weekday")
 def get_astro_weekday(
@@ -102,3 +109,45 @@ def get_astro_weekday(
         result["place"] = place
 
     return JSONResponse(content=result)
+
+
+# ------------------------------
+# 🪐 Endpoint ใหม่: คำนวณดวงดาวจริง (ใช้ flatlib)
+# ------------------------------
+@app.get("/api/astro-chart")
+def get_astro_chart(
+    date: str,
+    time: str,
+    timezone: str = "Asia/Bangkok",
+    lat: float = 13.75,
+    lon: float = 100.50
+):
+    """
+    คำนวณตำแหน่งดวงดาว (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Ascendant)
+    ตัวอย่าง:
+      /api/astro-chart?date=24/11/2514&time=11:00&timezone=Asia/Bangkok&lat=13.75&lon=100.5
+    """
+    d, cal = parse_ddmmyyyy_th(date)
+    from datetime import datetime as dt
+    tz = zoneinfo.ZoneInfo(timezone)
+    offset_hours = dt(d.year, d.month, d.day, int(time[:2]), int(time[3:]), tzinfo=tz).utcoffset().total_seconds() / 3600.0
+
+    pos = GeoPos(lat, lon)
+    t = Datetime(f"{d.year}/{d.month:02d}/{d.day:02d}", time, offset=offset_hours)
+    chart = Chart(t, pos)
+
+    planets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+    result = {p: {
+        "sign": chart.get(p).sign,
+        "lon": round(chart.get(p).lon, 2)
+    } for p in planets}
+
+    result["Ascendant"] = {
+        "sign": chart.get("Asc").sign,
+        "lon": round(chart.get("Asc").lon, 2)
+    }
+
+    return JSONResponse(content={
+        "input": {"date": date, "time": time, "timezone": timezone, "lat": lat, "lon": lon},
+        "planets": result
+    })
