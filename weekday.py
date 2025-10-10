@@ -151,3 +151,6 @@ def get_astro_chart(
         "input": {"date": date, "time": time, "timezone": timezone, "lat": lat, "lon": lon},
         "planets": result
     })
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("weekday:app", host="0.0.0.0", port=8000)
